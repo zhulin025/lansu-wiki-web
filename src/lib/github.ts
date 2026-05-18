@@ -1,4 +1,5 @@
 import matter from "gray-matter";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export interface GitHubFile {
   path: string;
@@ -60,19 +61,30 @@ function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
 
 export { parseGitHubUrl };
 
+function getGitHubToken(): string | undefined {
+  try {
+    const token = (getCloudflareContext().env as Record<string, unknown>)
+      .GITHUB_TOKEN;
+    if (typeof token === "string" && token) return token;
+  } catch {
+    // getCloudflareContext 在非 Worker 环境不可用,回退到 process.env
+  }
+  return process.env.GITHUB_TOKEN;
+}
+
 export async function fetchRepoTree(
   owner: string,
   repo: string
 ): Promise<{ path: string; url: string }[]> {
   // Use the Git Trees API to get all files at once
+  const token = getGitHubToken();
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`,
     {
       headers: {
         Accept: "application/vnd.github.v3+json",
-        ...(process.env.GITHUB_TOKEN
-          ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-          : {}),
+        "User-Agent": "lansu-wiki-web",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       next: { revalidate: 300 }, // cache for 5 mins
     }
@@ -101,7 +113,10 @@ export async function fetchFileContent(
 ): Promise<string> {
   const res = await fetch(
     `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${path}`,
-    { next: { revalidate: 300 } }
+    {
+      headers: { "User-Agent": "lansu-wiki-web" },
+      next: { revalidate: 300 },
+    }
   );
 
   if (!res.ok) {
