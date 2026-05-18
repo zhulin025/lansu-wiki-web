@@ -37,7 +37,7 @@
 
 ```bash
 # Clone
-git clone https://github.com/cclank/lansu-wiki-web.git
+git clone https://github.com/zhulin025/lansu-wiki-web.git
 cd lansu-wiki-web
 
 # Install
@@ -51,7 +51,7 @@ Open [http://localhost:3000](http://localhost:3000) and enter any GitHub repo UR
 
 ## Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cclank/lansu-wiki-web)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/zhulin025/lansu-wiki-web)
 
 Zero-config deployment. Optionally add `GITHUB_TOKEN` environment variable to increase API rate limits.
 
